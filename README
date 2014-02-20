@@ -1,1 +1,27 @@
-My readability service on GAE
+mfs6174's readability service on GAE
+
+GAE application which can convert a webpage (url provided through http GET) to clean,readable article PDF file (contains original format and images) . Chinese webpages (UTF-8 or GBK coded) are supported. This project is based on Readability (https://github.com/kingwkb/readability)  and xhtml2pdf(http://www.xhtml2pdf.com). 
+
+usage
+1.clone
+2.change fontName fontFile in main.py and put the fontfile in fonts folder if you like
+3.set userKey in main.py and appid in app.yaml
+4.upload to google app engine(GAE)
+5.GET http(s)://your-appid.appspot.com/trans?key=your-userkey&clean=1&pdf=1&url=your-url
+
+
+移植Readability和xhtml2pdf至GAE并加入中文支持过程中遇到的主要问题
+
+1.Readability使用beautifulSoup解析html时对一些非标准的字符的标签(<!--)不能识别,使用一个replace('\xe2\x80\x93','--')来解决
+
+2.中文字体的支持,在html数据的头部添加一个@fontface的CSS指定字体,并且字体要放在一个app.yaml定义的static之外的目录中,否则不能使用(感谢),并且只有部分字体被支持
+
+3.中文不能换行,超过pdf页面显示范围.使用了来自http://slee.sinaapp.com/?p=76的代码来解决
+
+4.xhtml2pdf使用的reportlab需要python image library(PIL)来把非jpg的图片加入pdf,但是PIL不是纯python库,不能运行在GAE上,而PNG和gif也是常见的网络图片.我修改了xhtml2pdf中的xhtml2pdf_reportlab.py,使用GAE api的images将各种格式的图片转换为jpg,再交给reportlab处理
+
+
+
+
+
+
