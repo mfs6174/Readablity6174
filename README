@@ -16,7 +16,7 @@ usage
 
 2.中文字体的支持,在html数据的头部添加一个@fontface的CSS指定字体,并且字体要放在一个app.yaml定义的static之外的目录中,否则不能使用(感谢),并且只有部分字体被支持
 
-3.中文不能换行,超过pdf页面显示范围.使用了来自http://slee.sinaapp.com/?p=76的代码来解决
+3.中文不能换行,超过pdf页面显示范围.使用了来自http://slee.sinaapp.com/?p=76 的代码来解决
 
 4.xhtml2pdf使用的reportlab需要python image library(PIL)来把非jpg的图片加入pdf,但是PIL不是纯python库,不能运行在GAE上,而PNG和gif也是常见的网络图片.我修改了xhtml2pdf中的xhtml2pdf_reportlab.py,使用GAE api的images将各种格式的图片转换为jpg,再交给reportlab处理
 

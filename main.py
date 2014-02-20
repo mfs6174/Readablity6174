@@ -2,7 +2,8 @@
 from __future__ import division
 
 import wsgiref.handlers
-from google.appengine.ext import webapp
+#from google.appengine.ext import webapp
+import webapp2
 from google.appengine.api import urlfetch
 import os
 import sys
@@ -381,12 +382,12 @@ class Readability:
 
                 
 
-class MainPage(webapp.RequestHandler):
+class MainPage(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.out.write('It works')
 
-class Processer(webapp.RequestHandler):
+class Processer(webapp2.RequestHandler):
     def get(self):
         outString=""
         postKey=self.request.get("key")
@@ -464,7 +465,9 @@ class Processer(webapp.RequestHandler):
                 outString=u'<html><head><title>'+outTitle+u'</title></head><body>'+u'<h1>'+outTitle+u'</h1>'+outString+u'</body></html>'
             self.response.out.write(outString)
 
+app=webapp2.WSGIApplication([('/', MainPage),('/trans', Processer)],debug=True)
 
+"""
 def main():
     application= webapp.WSGIApplication([('/', MainPage)],debug=True)
     application= webapp.WSGIApplication([('/trans', Processer)],debug=True)
@@ -472,3 +475,4 @@ def main():
 
 if __name__== "__main__":
     main()
+"""
