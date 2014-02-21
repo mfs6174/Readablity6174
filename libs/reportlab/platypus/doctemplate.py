@@ -572,7 +572,7 @@ class BaseDocTemplate:
             if 1:
                 ident = "More than %d pages generated without content - halting layout.  Likely that a flowable is too large for any frame." % self._emptyPagesAllowed
                 #leave to keep apart from the raise
-                raise LayoutError(ident)
+                #raise LayoutError(ident)
             else:
                 pass    #attempt to restore to good state
         else:
@@ -796,7 +796,7 @@ class BaseDocTemplate:
                         if not frame.add(S[0], canv, trySplit=0):
                             ident = "Splitting error(n==%d) on page %d in\n%s\nS[0]=%s" % (n,self.page,self._fIdent(f,60,frame),self._fIdent(S[0],60,frame))
                             #leave to keep apart from the raise
-                            raise LayoutError(ident)
+                            #raise LayoutError(ident)
                         self._curPageFlowableCount += 1
                         self.afterFlowable(S[0])
                         flowables[0:0] = S[1:]  # put rest of splitted flowables back on the list
@@ -809,7 +809,7 @@ class BaseDocTemplate:
                                 (self._fIdent(f,60,frame),_fSizeString(f),self.page, self.frame.id,
                                         self.frame._aSpaceString(), self.pageTemplate.id)
                         #leave to keep apart from the raise
-                        raise LayoutError(ident)
+                        #raise LayoutError(ident)
                     # this ought to be cleared when they are finally drawn!
                     f._postponed = 1
                     mbe = getattr(self,'_multiBuildEdits',None)
