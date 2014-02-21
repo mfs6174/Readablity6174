@@ -6,6 +6,7 @@ import wsgiref.handlers
 import webapp2
 from google.appengine.api import urlfetch
 from google.appengine.api.labs import taskqueue
+from google.appengine.api import mail
 
 import os
 import sys
@@ -27,7 +28,8 @@ from StringIO import StringIO
 userKey=""
 fontFile=u"simsun.ttc"
 fontName=u'simsun'
-sendMail=True
+mailTo=""
+mailFrom=""
 
 ####codes to solve the PDF's Chinese line-break problem below from http://slee.sinaapp.com/?p=76
 import xhtml2pdf.reportlab_paragraph
@@ -385,58 +387,45 @@ class Readability:
 
                 
 
-class MainPage(webapp2.RequestHandler):
-    def get(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('It works')
 
-class Processer(webapp2.RequestHandler):
-    def get(self):
+class MainTask(webapp2.RequestHandler):
+    def post(self):
         outString=""
-        postKey=self.request.get("key")
-        postPdf=self.request.get("pdf")
-        postClean=self.request.get("clean")
         outTitle=''
+        postKey=self.request.get("key")
+        postUrl=self.request.get("url")
+        postClean=self.request.get("clean")
+        postPdf=self.request.get("pdf")
         if postKey!=userKey:
-            outString='It works'
-            self.response.out.write(outString)
             return
-        else:
-            postUrl=self.request.get("url")
-            if sendMail==True:
-                ddqueue = taskqueue.Queue('default')
-                ddqueue.add(taskqueue.Task(url='/mainTask', 
-                            params={'key': postKey,'url': postUrl,'pdf': postPdf,'clean': postClean},
-                            retry_options=taskqueue.TaskRetryOptions(task_retry_limit=3)))
-            try:
-                result= urlfetch.fetch(postUrl)
-                self.response.out.write(outString)
-            except:
-                result=0
-            if result!=0:
-                if result.status_code== 200:
-                    ###this line solve the <!-- tag problem of some webpage(like sina blog) 
-                    tmps=result.content.replace('\xe2\x80\x93','--')
-                    try:
-                        htmlCode=tmps.decode('utf-8')
-                    except:
-                        htmlCode=tmps.decode('gbk')
-                else:
-                    htmlCode=""
-                if htmlCode!="":
-                    readData = Readability(htmlCode, postUrl)
-                    outString=readData.content
-                    outTitle=readData.title
-                else:
-                    outString=''
-                    outTitle=''
-                if postClean=='0':
-                    outString=htmlCode
+        try:
+            result= urlfetch.fetch(postUrl)
+            self.response.out.write(outString)
+        except:
+            result=0
+        if result!=0:
+            if result.status_code== 200:
+                ###this line solve the <!-- tag problem of some webpage(like sina blog) 
+                tmps=result.content.replace('\xe2\x80\x93','--')
+                try:
+                    htmlCode=tmps.decode('utf-8')
+                except:
+                    htmlCode=tmps.decode('gbk')
+            else:
+                htmlCode=""
+            if htmlCode!="":
+                readData = Readability(htmlCode, postUrl)
+                outString=readData.content
+                outTitle=readData.title
             else:
                 outString=''
                 outTitle=''
+            if postClean=='0':
+                outString=htmlCode
+        else:
+            outString=''
+            outTitle=''
         if postPdf and postPdf!='0':
-            self.response.headers['Content-Type'] = 'application/pdf'
             if postClean!='0':
                 outString=u'''<style type="text/css">
                 @font-face { 
@@ -446,7 +435,7 @@ class Processer(webapp2.RequestHandler):
                 html { 
                 font-family: '''+fontName+'''; 
                 } 
-</style>'''+u'<html><head><title>'+outTitle+u'</title></head><body>'+u'<h1>'+outTitle+u'</h1>'+outString+u'</body></html>'
+        </style>'''+u'<html><head><title>'+outTitle+u'</title></head><body>'+u'<h1>'+outTitle+u'</h1>'+outString+u'</body></html>'
             else:
                 outString=outString=u'''<style type="text/css">
                 @font-face { 
@@ -466,21 +455,19 @@ class Processer(webapp2.RequestHandler):
             encoding='utf-8',
             )
             pdfData=pdf.dest.getvalue()        
-            self.response.out.write(pdfData)
+            mail.send_mail(sender=mailFrom,
+                            to=mailTo,
+                            subject=u"From Readability6174  "+outTitle,
+                            body=u"From Readability6174   "+outTitle+"     "+postUrl,
+                            attachments=[(postUrl+'.pdf', pdfData)])
         else:
             self.response.headers['Content-Type'] = 'text/html'
             if postClean!='0':
                 outString=u'<html><head><title>'+outTitle+u'</title></head><body>'+u'<h1>'+outTitle+u'</h1>'+outString+u'</body></html>'
-            self.response.out.write(outString)
+            mail.send_mail(sender=mailFrom,
+                            to=mailTo,
+                            subject=u"From Readability6174  "+outTitle,
+                            body=u"From Readability6174   "+outTitle+"     "+postUrl,
+                            attachments=[(postUrl+'.html', outString)])
 
-app=webapp2.WSGIApplication([('/', MainPage),('/trans', Processer)],debug=True)
-
-"""
-def main():
-    application= webapp.WSGIApplication([('/', MainPage)],debug=True)
-    application= webapp.WSGIApplication([('/trans', Processer)],debug=True)
-    wsgiref.handlers.CGIHandler().run(application)
-
-if __name__== "__main__":
-    main()
-"""
+app=webapp2.WSGIApplication([('/mainTask', MainTask)],debug=True)

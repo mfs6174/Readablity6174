@@ -4,7 +4,7 @@ GAE application which can convert a webpage (url provided through http GET) to c
 
 usage
 1.clone
-2.change fontName fontFile in main.py and put the fontfile in fonts folder if you like
+2.change fontName fontFile in main.py and put the fontfile in fonts folder if you like. Set sendMail in main.py to True and set mailFrom mailTo in mainTask.py if you want to sent mail with pdf attachment.
 3.set userKey in main.py and appid in app.yaml
 4.upload to google app engine(GAE)
 5.GET http(s)://your-appid.appspot.com/trans?key=your-userkey&clean=1&pdf=1&url=your-url
@@ -19,6 +19,8 @@ usage
 3.中文不能换行,超过pdf页面显示范围.使用了来自http://slee.sinaapp.com/?p=76 的代码来解决
 
 4.xhtml2pdf使用的reportlab需要python image library(PIL)来把非jpg的图片加入pdf,但是PIL不是纯python库,不能运行在GAE上,而PNG和gif也是常见的网络图片.我修改了xhtml2pdf中的xhtml2pdf_reportlab.py,使用GAE api的images将各种格式的图片转换为jpg,再交给reportlab处理
+
+5.GAE上运行处理html和图片太容易超时,加了个用taskQueue发邮件(pdf附件)的功能来保证一定能可靠得到pdf.
 
 
 
