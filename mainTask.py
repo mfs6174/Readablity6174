@@ -407,10 +407,20 @@ class MainTask(webapp2.RequestHandler):
             if result.status_code== 200:
                 ###this line solve the <!-- tag problem of some webpage(like sina blog) 
                 tmps=result.content.replace('\xe2\x80\x93','--')
-                try:
-                    htmlCode=tmps.decode('utf-8')
-                except:
-                    htmlCode=tmps.decode('gbk')
+                tdc=chardet.detect(tmps)
+                if tdc.get('confidence')>=0.6:
+                    htmlCode=tmps.decode(tdc.get('encoding'),'ignore')
+                else:
+                    try:
+                        htmlCode=tmps.decode('utf-8')
+                    except:
+                        try:
+                            htmlCode=tmps.decode('gbk')
+                        except:
+                            try:
+                                htmlCode=tmps.decode('gb2312')
+                            except:
+                                htmlCode=tmps.decode(chardet.detect(tmps).get('encoding'),'ignore')
             else:
                 htmlCode=""
             if htmlCode!="":

@@ -396,6 +396,7 @@ class Processer(webapp2.RequestHandler):
         postKey=self.request.get("key")
         postPdf=self.request.get("pdf")
         postClean=self.request.get("clean")
+        postFront=self.request.get("front")
         outTitle=''
         if postKey!=userKey:
             outString='It works'
@@ -408,6 +409,10 @@ class Processer(webapp2.RequestHandler):
                 ddqueue.add(taskqueue.Task(url='/mainTask', 
                             params={'key': postKey,'url': postUrl,'pdf': postPdf,'clean': postClean},
                             retry_options=taskqueue.TaskRetryOptions(task_retry_limit=3)))
+            if postFront=='0':
+                outString='It works'
+                self.response.out.write(outString)
+                return
             try:
                 result= urlfetch.fetch(postUrl)
                 self.response.out.write(outString)
@@ -417,10 +422,21 @@ class Processer(webapp2.RequestHandler):
                 if result.status_code== 200:
                     ###this line solve the <!-- tag problem of some webpage(like sina blog) 
                     tmps=result.content.replace('\xe2\x80\x93','--')
-                    try:
-                        htmlCode=tmps.decode('utf-8')
-                    except:
-                        htmlCode=tmps.decode('gbk')
+                    tdc=chardet.detect(tmps)
+                    if tdc.get('confidence')>=0.6:
+                        htmlCode=tmps.decode(tdc.get('encoding'),'ignore')
+                    else:
+                        try:
+                            htmlCode=tmps.decode('utf-8')
+                        except:
+                            try:
+                                htmlCode=tmps.decode('gbk')
+                            except:
+                                try:
+                                    htmlCode=tmps.decode('gb2312')
+                                except:
+                                    htmlCode=tmps.decode(chardet.detect(tmps).get('encoding'),'ignore')
+
                 else:
                     htmlCode=""
                 if htmlCode!="":
