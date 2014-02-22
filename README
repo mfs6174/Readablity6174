@@ -14,7 +14,7 @@ usage
 
 1.Readability使用beautifulSoup解析html时对一些非标准的字符的标签(<!--)不能识别,使用一个replace('\xe2\x80\x93','--')来解决
 
-2.中文字体的支持,在html数据的头部添加一个@fontface的CSS指定字体,并且字体要放在一个app.yaml定义的static之外的目录中,否则不能使用(感谢),并且只有部分字体被支持
+2.中文字体的支持,在html数据的头部添加一个@fontface的CSS指定字体,并且字体要放在一个app.yaml定义的static之外的目录中,否则不能使用(参考https://groups.google.com/forum/#!msg/xhtml2pdf/U5HeC36CPSQ/u_py6zD7JGoJ),并且只有部分字体被支持
 
 3.中文不能换行,超过pdf页面显示范围.使用了来自http://slee.sinaapp.com/?p=76 的代码来解决
 
